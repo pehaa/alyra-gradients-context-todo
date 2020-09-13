@@ -94,9 +94,13 @@ Fichier `FilterContext.js` exporte `FilterContext` (named export) et `FilterCont
 
 La props `value` de `Provider` permettra à tous ses components enfants d'avoir accés à la valeur passée. Les components enfant vont aussi se mettre à jour (re-render) quand `value` change.
 
-Ici nous passons dans value un objet avec 2 clés : `filter`, et `setFilter`.
+Ici nous passons dans value un objet avec 2 clés : `filter` et `setFilter`.
 
-ensuite dans `App.js`
+## App
+
+### App.js
+
+Dans `App.js`, nous allons importer `FilterContextProvider` et le mettre en place.
 
 ```javascript
 // src/App.js
@@ -127,18 +131,19 @@ function App() {
 export default App
 ```
 
+### Gradients.js
+
 Nous allons également modifier `Gradients.js`
 
 ```javascript
 import React from "react"
-import { uniqueTags } from "../gradients"
 import GradientsList from "./GradientsList"
 import GradientsSelect from "./GradientsSelect"
 
 const Gradients = () => {
   return (
     <>
-      <GradientsSelect tags={uniqueTags} />
+      <GradientsSelect />
       <GradientsList />
     </>
   )
@@ -230,10 +235,10 @@ export default GradientTagButton
 ```javascript
 // src/components/GradientsSelect.js
 import React, { useContext } from "react"
+import { uniqueTags } from "../gradients"
 import { FilterContext } from "./../context/FilterContext"
 
-const GradientsSelect = (props) => {
-  const { tags } = props
+const GradientsSelect = () => {
   const { filter, setFilter } = useContext(FilterContext)
   const handleSelectChange = (e) => {
     setFilter(e.target.value)
@@ -273,6 +278,5 @@ Astuces:
 
 - créer un nouveau fichier `src/context/GradientsContext.js`
 - dans `GradientsContext.js`, importer `gradients` et `uniqueTags` depuis `src/gradients.js`
--
-- passer `value={{gradients, uniqueTags}}`
+- dans `GradientsContext.Provider` passer `value={{gradients, uniqueTags}}`
 - faire refactoring
