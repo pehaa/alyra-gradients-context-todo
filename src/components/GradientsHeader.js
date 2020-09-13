@@ -1,9 +1,9 @@
 import React, { useState } from "react"
-import { gradients as list } from "../gradients"
+import { gradients } from "../gradients"
 
 const GradientsHeader = (props) => {
   const { children } = props
-  const length = list.length
+  const length = gradients.length
 
   const chooseGradient = () => Math.floor(Math.random() * length)
 
@@ -13,7 +13,7 @@ const GradientsHeader = (props) => {
   }
 
   const style = {
-    backgroundImage: `linear-gradient(to right, ${list[randomGradient].start}, ${list[randomGradient].end})`,
+    backgroundImage: `linear-gradient(to right, ${gradients[randomGradient].start}, ${gradients[randomGradient].end})`,
   }
   return (
     <header className="text-center bg-dark text-white py-5 mb-5" style={style}>

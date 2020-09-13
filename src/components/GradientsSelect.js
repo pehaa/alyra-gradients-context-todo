@@ -1,8 +1,8 @@
 import React, { useContext } from "react"
+import { uniqueTags } from "../gradients"
 import { FilterContext } from "./../context/FilterContext"
 
-const GradientsSelect = (props) => {
-  const { tags } = props
+const GradientsSelect = () => {
   const { filter, setFilter } = useContext(FilterContext)
   const handleSelectChange = (e) => {
     setFilter(e.target.value)
@@ -19,7 +19,7 @@ const GradientsSelect = (props) => {
         onChange={handleSelectChange}
       >
         <option value="all">Tous</option>
-        {tags.map((el) => (
+        {uniqueTags.map((el) => (
           <option key={el} value={el}>
             {el}
           </option>
