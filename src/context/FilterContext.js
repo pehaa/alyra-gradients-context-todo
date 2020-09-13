@@ -1,4 +1,3 @@
-// src/context/FilterContext.js
 import React, { useState, createContext } from "react"
 
 // créer et exporter ("named") FilterContext object
