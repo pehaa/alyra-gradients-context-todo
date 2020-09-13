@@ -1,104 +1,277 @@
-# A faire
+# Refactoring avec react Context API et useContext hook
 
-## Installer bootstrap5
+## Structure du projet
 
 ```bash
-yarn add bootstrap@next
+src
+├── App.js
+├── App.test.js
+├── components
+│   ├── Footer.js
+│   ├── Gradient
+│   │   ├── GradientCode.js
+│   │   ├── GradientPill.js
+│   │   ├── GradientTagButton.js
+│   │   ├── GradientTags.js
+│   │   ├── GradientTitle.js
+│   │   ├── gradient.css
+│   │   └── index.js
+│   ├── Gradients.js
+│   ├── GradientsHeader.js
+│   ├── GradientsList.js
+│   └── GradientsSelect.js
+├── gradients.js
+├── index.css
+├── index.js
+├── serviceWorker.js
+└── setupTests.js
 ```
 
-## Mettre en place bootstrap5
+![](https://wptemplates.pehaa.com/assets/alyra/diagram.png)
 
-Comme dans todos app
+## Motivation
 
-## Head
+Regardons l'image ci-dessus. Nous utilisons `filter` et `setFilter` dans `GradientsSelect` et `GradientsTagButton`.
 
-Dans le ficher `public/index.html` configurez la partie head (title, lang, meta)
-Vous pouvez aussi remplacer `favicon.ico`, `logo192.png` et `logo512.png`
+Leur common parent est le component 'Gradients` et c'est là où nous trouverons le code :
 
-## Components
+```javascript
+// src/components/Gradients.js
+import React, { useState } from "react"
+// ....
 
-Mettez en place un dossier `src/components` avec des components :
+const Gradients = () => {
+  const [filter, setFilter] = useState("all")
+  // ...
+}
 
-- GradientsList
-- Gradient
-- GradientTitle
-- GradientPill
-- GradientCode
-- GradientHeader
+export default Gradients
+```
 
-## Working App
+ensuite nous passons `filter` et `setFilter` en tant que props dans `GradientsSelect`.
 
-Le fichier contenant dans la liste de gradients se trouve dans `src/gradients.js`
+Nous devons aussi poursuivre tout le chemin entre `Gradients` vers `GradientTagButton` en passant à chaque fois des props `filter` et `setFilter`.
 
-Utilisez le code des exercices et afin de reproduire l'ensemble dans votre app.
+Existe-il une autre possibilité ? Passer les props tout le long n'est pas très génant dans ce projet-ci, mais imaginons un projet plus complexe...
 
----
+Voici un extrait de la documentation officiele de React
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+> Dans une application React typique, les données sont passées de haut en bas (du parent à l’enfant) via les props, mais cela peut devenir lourd pour certains types de props (ex. les préférences régionales, le thème de l’interface utilisateur) qui s’avèrent nécessaires pour de nombreux composants au sein d’une application. Le Contexte offre un moyen de partager des valeurs comme celles-ci entre des composants sans avoir à explicitement passer une prop à chaque niveau de l’arborescence.
 
-## Available Scripts
+> En utilisant le Contexte, nous pouvons éviter de passer les props à travers des éléments intermédiaires.
 
-In the project directory, you can run:
+![](https://wptemplates.pehaa.com/assets/alyra/diagram-usecontext.png)
 
-### `yarn start`
+## Mise en place de context et son "provider"
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```bash
+mkdir src/context
+touch src/context/FilterContext.js
+```
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+```javascript
+// src/context/FilterContext.js
+import React, {useState, createContext} from 'react'
 
-### `yarn test`
+// créer et exporter ("named") FilterContext object
+export const FilterContext = createContext()
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+/* le component-provider qui embracera la partie de notre app où on utilise ce context */
 
-### `yarn build`
+const FilterContextProvider = ({children}) => {
+  const [filter, setFilter] = useState("all")
+  return (
+    <FilterContext.Provider value={{filter, setFilter}}>
+      {children}
+    <FilterContext.Provider>
+  )
+}
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+export default FilterContextProvider
+```
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+Fichier `FilterContext.js` exporte `FilterContext` (named export) et `FilterContextProvider` (default export).
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+La props `value` de `Provider` permettra à tous ses components enfants d'avoir accés à la valeur passée. Les components enfant vont aussi se mettre à jour (re-render) quand `value` change.
 
-### `yarn eject`
+Ici nous passons dans value un objet avec 2 clés : `filter`, et `setFilter`.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+ensuite dans `App.js`
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```javascript
+// src/App.js
+import React from "react"
+import Gradients from "./components/Gradients"
+import GradientsHeader from "./components/GradientsHeader"
+import Footer from "./components/Footer"
+import FilterContextProvider from "./context/FilterContext"
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+function App() {
+  return (
+    <div className="App">
+      <GradientsHeader>
+        <h1 className="display-1">Alyra Gradients</h1>
+        <p className="tagline">Ultime collection de plus beaux dégradés</p>
+      </GradientsHeader>
+      <main className="container">
+        <h1 className="text-center my-4">Alyra Gradients</h1>
+        <FilterContextProvider>
+          <Gradients />
+        </FilterContextProvider>
+      </main>
+      <Footer />
+    </div>
+  )
+}
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+export default App
+```
 
-## Learn More
+Nous allons également modifier `Gradients.js`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```javascript
+import React from "react"
+import GradientsList from "./GradientsList"
+import GradientsSelect from "./GradientsSelect"
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+const Gradients = () => {
+  return (
+    <>
+      <GradientsSelect tags={allTags} />
+      <GradientsList />
+    </>
+  )
+}
 
-### Code Splitting
+export default Gradients
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+![](https://wptemplates.pehaa.com/assets/alyra/diagram-usecontext.png)
 
-### Analyzing the Bundle Size
+## Consommer context avec useContext
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+### GradientsList.js
 
-### Making a Progressive Web App
+```javascript
+// src/components/GradientsList.js
+import React, { useContext } from "react"
+import { gradients } from "./gradients"
+import Gradient from "./Gradient"
+import { FilterContext } from "./../context/FilterContext"
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+const GradientsList = (props) => {
+  const { filter } = useContext(FilterContext)
+  const list = gradients.filter((el) => {
+    if (filter === "all") {
+      return true
+    }
+    return el.tags.includes(filter)
+  })
+  return (
+    <ul className="row list-unstyled">
+      {list.map((el) => {
+        const { name, start, end, tags = [] } = el
+        return (
+          <Gradient
+            key={el.name}
+            colorStart={start}
+            colorEnd={end}
+            name={name}
+            tags={tags}
+          />
+        )
+      })}
+    </ul>
+  )
+}
 
-### Advanced Configuration
+export default GradientsList
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+## Gradient
 
-### Deployment
+Dans `Gradient` component nous allons enlever `filter` et `setFilter` en tant que props que nous passons ensuite vers `GradientTags`
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+## GradientTags
 
-### `yarn build` fails to minify
+Dans `GradientTags` component nous allons enlever `filter` et `setFilter` en tant que props que nous passons ensuite vers `GradientTagButton`
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+## GradientTagButton
+
+```javascript
+// src/components/Gradient/GradientTagButton.js
+import React, { useContext } from "react"
+import { FilterContext } from "./../../context/FilterContext"
+
+const GradientTagButton = ({ tag }) => {
+  const { filter, setFilter } = useContext(FilterContext)
+  const className = filter === tag ? "bg-light" : "bg-dark text-white"
+  const handleTagClick = () => {
+    setFilter(tag)
+  }
+  return (
+    <button
+      type="button"
+      className={`btn btn-sm mr-2 ${className}`}
+      disabled={filter === tag}
+      onClick={handleTagClick}
+    >
+      {tag}
+    </button>
+  )
+}
+
+export default GradientTagButton
+```
+
+## GradientsSelect
+
+```javascript
+// src/components/GradientsSelect.js
+import React, { useContext } from "react"
+import { FilterContext } from "./../context/FilterContext"
+
+const GradientsSelect = (props) => {
+  const { tags } = props
+  const { filter, setFilter } = useContext(FilterContext)
+  const handleSelectChange = (e) => {
+    setFilter(e.target.value)
+  }
+  return (
+    <div className="input-group mb-3">
+      <label className="input-group-text" htmlFor="select">
+        Filtrer par tag
+      </label>
+      <select
+        className="form-select"
+        id="select"
+        value={filter}
+        onChange={handleSelectChange}
+      >
+        <option value="all">Tous</option>
+        {tags.map((el) => (
+          <option key={el} value={el}>
+            {el}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+export default GradientsSelect
+```
+
+## todo
+
+Créer un deuxième contexte, qui embracera toute l'application et passera l'array `gradients` et l'array `uniqueTags`
+
+![](https://wptemplates.pehaa.com/assets/alyra/diagram-usecontext2.png)
+
+Astuces:
+
+- créer un nouveau fichier `src/context/GradientsContext.js`
+- dans `GradientsContext.js`, importer `gradients` et `uniqueTags` depuis `src/gradients.js`
+-
+- passer `value={{gradients, uniqueTags}}`
+- faire refactoring
