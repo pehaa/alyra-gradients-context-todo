@@ -71,19 +71,19 @@ touch src/context/FilterContext.js
 
 ```javascript
 // src/context/FilterContext.js
-import React, {useState, createContext} from 'react'
+import React, { useState, createContext } from "react"
 
 // créer et exporter ("named") FilterContext object
 export const FilterContext = createContext()
 
 /* le component-provider qui embracera la partie de notre app où on utilise ce context */
 
-const FilterContextProvider = ({children}) => {
+const FilterContextProvider = ({ children }) => {
   const [filter, setFilter] = useState("all")
   return (
-    <FilterContext.Provider value={{filter, setFilter}}>
+    <FilterContext.Provider value={{ filter, setFilter }}>
       {children}
-    <FilterContext.Provider>
+    </FilterContext.Provider>
   )
 }
 
@@ -108,7 +108,7 @@ import FilterContextProvider from "./context/FilterContext"
 
 function App() {
   return (
-    <div className="App">
+    <>
       <GradientsHeader>
         <h1 className="display-1">Alyra Gradients</h1>
         <p className="tagline">Ultime collection de plus beaux dégradés</p>
@@ -120,7 +120,7 @@ function App() {
         </FilterContextProvider>
       </main>
       <Footer />
-    </div>
+    </>
   )
 }
 
@@ -131,13 +131,14 @@ Nous allons également modifier `Gradients.js`
 
 ```javascript
 import React from "react"
+import { uniqueTags } from "../gradients"
 import GradientsList from "./GradientsList"
 import GradientsSelect from "./GradientsSelect"
 
 const Gradients = () => {
   return (
     <>
-      <GradientsSelect tags={allTags} />
+      <GradientsSelect tags={uniqueTags} />
       <GradientsList />
     </>
   )
@@ -155,7 +156,7 @@ export default Gradients
 ```javascript
 // src/components/GradientsList.js
 import React, { useContext } from "react"
-import { gradients } from "./gradients"
+import { gradients } from "./../gradients"
 import Gradient from "./Gradient"
 import { FilterContext } from "./../context/FilterContext"
 
