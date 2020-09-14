@@ -5,7 +5,7 @@ import { FilterContext } from "./../context/FilterContext"
 
 const GradientsList = (props) => {
   const { filter } = useContext(FilterContext)
-  const list = gradients.filter((el) => {
+  const filteredGradients = gradients.filter((el) => {
     if (filter === "all") {
       return true
     }
@@ -13,7 +13,7 @@ const GradientsList = (props) => {
   })
   return (
     <ul className="row list-unstyled">
-      {list.map((el) => {
+      {filteredGradients.map((el) => {
         const { name, start, end, tags = [] } = el
         return (
           <Gradient
